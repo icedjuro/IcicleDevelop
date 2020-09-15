@@ -33,6 +33,12 @@
     "appId": "me.milandjurovic.icicledevelop",
     "productName": "IcicleDevelop",
     "copyright": "Copyright © 2020 ${author}",
+    "publish": [
+      {
+        "provider": "github",
+        "releaseType": "release"
+      }
+    ],
     "win": {
       "target": [
         "nsis",
