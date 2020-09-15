@@ -104,17 +104,13 @@ header {
 
 #titlebar-menu ul li {
     border-top: var(--white) 1px solid;
-    display: flex;
-    justify-content: space-between;
+}
+#titlebar-menu ul li label, #titlebar-menu ul li button {
     padding: 8px 14px;
-}
-#titlebar-menu ul li label, #titlebar-menu ul li button, #titlebar-menu ul li p {
     line-height: 100%;
+    width: 100%;
+    cursor: pointer;
     display: block;
-}
-
-#titlebar-menu ul li p {
-    margin-left: 40px;
 }
 
 #titlebar-menu ul li:hover {
