@@ -21,13 +21,13 @@
   "license": "MIT",
   "dependencies": {
     "codemirror": "^5.57.0",
+    "electron-updater": "^4.3.4",
     "feather-icons": "^4.28.0",
     "requirejs": "^2.3.6"
   },
   "devDependencies": {
     "electron": "^10.1.2",
-    "electron-builder": "^22.8.0",
-    "electron-updater": "^4.3.4"
+    "electron-builder": "^22.8.0"
   },
   "build": {
     "appId": "me.milandjurovic.icicledevelop",
