@@ -1,0 +1,61 @@
+{
+  "name": "icicledevelop",
+  "version": "1.0.0",
+  "description": "A freezing cold development environment",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron .",
+    "start-dev": "electron . --dev",
+    "dist:win": "electron-builder --win -p never",
+    "dist:linux": "electron-builder --linux -p never",
+    "dist:mac": "electron-builder --mac -p never",
+    "release:win": "electron-builder --win -p always",
+    "release:linux": "electron-builder --linux -p always",
+    "release:mac": "electron-builder --mac -p always"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/icedjuro/IcicleDevelop.git"
+  },
+  "author": "Milan Djurovic",
+  "license": "MIT",
+  "dependencies": {
+    "codemirror": "^5.57.0",
+    "feather-icons": "^4.28.0",
+    "requirejs": "^2.3.6"
+  },
+  "devDependencies": {
+    "electron": "^10.1.2",
+    "electron-builder": "^22.8.0",
+    "electron-updater": "^4.3.4"
+  },
+  "build": {
+    "appId": "me.milandjurovic.icicledevelop",
+    "productName": "IcicleDevelop",
+    "copyright": "Copyright © 2020 ${author}",
+    "win": {
+      "target": [
+        "nsis",
+        "zip",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": "false",
+      "allowToChangeInstallationDirectory": "true"
+    },
+    "linux": {
+      "icon": "assets/logo128.png",
+      "target": [
+        "AppImage",
+        "zip",
+        "rpm",
+        "deb"
+      ],
+      "category": "Development"
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools"
+    }
+  }
+}

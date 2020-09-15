@@ -1,0 +1,259 @@
+@font-face {
+    font-family: 'SourceCodePro';
+    src: url("../assets/SourceCodePro-Regular.ttf");
+}
+
+:root {
+    --white: #e2f3f5;
+    --light-blue: #22d1ee;
+    --dark-blue: #3d5af1;
+    --navy: #0e153a;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body {
+    background-color: var(--navy);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+header {
+    width: 100vw;
+    height: 30px;
+    background-color: var(--navy);
+    border-bottom: var(--dark-blue) 2px solid;
+}
+
+.titlebar {
+    -webkit-app-region: drag;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: calc(100vw - 4px);
+    height: 28px;
+}
+
+.titlebar-button-container {
+    position: absolute;
+    right: 0;
+    top: 0;
+    display: flex;
+    flex-direction: row-reverse;
+    z-index: 100;
+}
+
+.titlebar-button {
+    width: 30px;
+    height: 30px;
+    background-color: var(--navy);
+    -webkit-app-region: no-drag;
+    display: flex;
+    align-items: center;
+}
+
+.titlebar-button-img {
+    filter: brightness(20);
+}
+
+.titlebar-button:hover {
+    background-color: #20295a;
+}
+
+.close-button:hover {
+    background-color: #e11;
+}
+
+#titlebar-menu {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    -webkit-app-region: no-drag;
+    border-right: 25px solid transparent;
+    border-bottom: 30px solid var(--dark-blue);
+    height: 0;
+    cursor: pointer;
+}
+
+#titlebar-button {
+    display: flex;
+    width: max-content;
+    height: max-content;
+}
+
+#titlebar-menu:hover {
+    border-bottom: 30px solid #6478db;
+}
+
+#titlebar-menu ul {
+    display: none;
+    text-decoration: none;
+    position: absolute;
+    background-color: var(--navy);
+    color: var(--white);
+    border-radius: 0px 0px 4px 4px;
+    border: var(--white) 1px solid;
+    margin-top: 30px;
+    z-index: 5;
+    width: max-content;
+}
+
+#titlebar-menu ul li {
+    border-top: var(--white) 1px solid;
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 14px;
+}
+#titlebar-menu ul li label, #titlebar-menu ul li button, #titlebar-menu ul li p {
+    line-height: 100%;
+    display: block;
+}
+
+#titlebar-menu ul li p {
+    margin-left: 40px;
+}
+
+#titlebar-menu ul li:hover {
+    background-color: #20295a;
+}
+
+#titlebar-menu img {
+    margin-top: 1px;
+    margin-left: 1px;
+}
+
+#titlebar-menu p {
+    color: var(--white);
+    line-height: 30px;
+    margin-left: 5px;
+}
+
+main {
+    width: 100vw;
+    height: calc(100vh - 32px);
+}
+
+.central-container {
+    display: flex;
+    width: 100vw;
+    height: calc(100vh - 32px - 42px);
+}
+
+#fileexplorer {
+    height: 100%;
+    width: 300px;
+    border-left: var(--dark-blue) 2px solid;
+}
+
+#fileexplorer ul li {
+    height: 35px;
+    line-height: 100%;
+    width: 100%;
+    text-align: center;
+    color: var(--white);
+    background-color: #20295a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#fileexplorer ul li * {
+    margin-left: 5px;
+}
+
+#codearea {
+    height: 100%;
+    width: 100%;
+    background-color: #080e2b;
+    overflow: auto;
+    display: none;
+}
+
+#welcome-page {
+    height: 100%;
+    width: 100%;
+    color: var(--white);
+    text-align: center;
+    background-color: #080e2b;
+    position: relative;
+    overflow: auto;
+}
+
+#welcome-page h1 {
+    opacity: 70%;
+    margin: 8% 0 2% 0;
+}
+
+#welcome-page h3 {
+    opacity: 70%;
+    font-style: italic;
+    margin: 2% 0 6% 0;
+}
+
+#welcome-close-button {
+    width: 60px;
+    height: 60px;
+    -webkit-app-region: no-drag;
+    display: flex;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+}
+
+#welcome-close-button img {
+    filter: brightness(20);
+}
+
+.CodeMirror {
+    font-family: SourceCodePro;
+    font-size: 16px;
+}
+
+.settingsbar {
+    height: 40px;
+    width: 100vw;
+    border-top: var(--dark-blue) 2px solid;
+    position: absolute;
+    bottom: 0;
+    display: flex;
+}
+
+.settingsbar .feather-settings, .settingsbar .feather-info {
+    height: 40px;
+    margin: 0 10px 0 10px;
+    color: var(--white);
+}
+
+.settingsbar .feather-settings:hover, .settingsbar .feather-info:hover {
+    cursor: pointer;
+    color: #95aeb1; 
+}
+
+/* SCROLLBAR CSS */
+.CodeMirror-vscrollbar, .CodeMirror-hscrollbar {
+    outline: none;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  cursor: default;
+}
+
+::-webkit-scrollbar-track {
+  background: #0e153a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--dark-blue);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #213bb9;
+}
+/* END SCROLLBAR CSS*/

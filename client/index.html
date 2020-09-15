@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IcicleDevelop</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../node_modules/codemirror/lib/codemirror.css">
+  <link rel="stylesheet" href="../node_modules/codemirror/theme/night.css">
+  <link rel="stylesheet" href="../node_modules/codemirror/addon/dialog/dialog.css">
+  <link rel="stylesheet" href="../node_modules/codemirror/addon/fold/foldgutter.css">
+  <script src="../node_modules/feather-icons/dist/feather.min.js"></script>
+</head>
+
+<body>
+  <header>
+    <div class="titlebar"></div>
+    <div id="titlebar-menu">
+      <div id="titlebar-button">
+        <img src="../assets/logo128.png" height="28" />
+        <p>IcicleDevelop</p>
+      </div>
+      <ul>
+        <li>
+          <label for="openFile">Open File</label>
+          <p>Ctrl + O</p>
+          <input style="display:none" id="openFile" type="file">
+        </li>
+        <li>
+          <label for="saveFile">Save</label>
+          <p>Ctrl + S</p>
+          <button style="display:none" id="saveFile"></button>
+        </li>
+        <li>
+          <label for="quit">Quit</label>
+          <button style="display:none" id="quit" class="close-button"></button>
+        </li>
+      </ul>
+    </div>
+    <div class="titlebar-button-container">
+      <div class="titlebar-button close-button">
+        <img class="titlebar-button-img" src="../assets/close_button.png" draggable="false" width="30" />
+      </div>
+      <div class="titlebar-button" id="maximize-button">
+        <img class="titlebar-button-img" src="../assets/maximize_button.png" draggable="false" width="30" />
+      </div>
+      <div class="titlebar-button" id="minimize-button">
+        <img class="titlebar-button-img" src="../assets/minimize_button.png" draggable="false" width="30" />
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="central-container">
+      <div id="welcome-page">
+        <h1>Welcome to IcicleDevelop</h1>
+        <img src="../assets/logo128.png" />
+        <div id="welcome-close-button">
+          <img src="../assets/close_button.png" draggable="false" width="60" />
+        </div>
+        <h3></h3>
+        <p>Click on the top-left tab to open your project and get started.</p>
+      </div>
+      <div id="codearea">
+      </div>
+      <div id="fileexplorer">
+        <ul>
+          <li>
+            <p>No files selected</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="settingsbar">
+      <!-- <i id="settings-button" data-feather="settings"></i> -->
+      <i id="info-button" data-feather="info"></i>
+    </div>
+  </main>
+  <script data-main="script" src="../node_modules/requirejs/require.js"></script>
+</body>
+
+</html>
