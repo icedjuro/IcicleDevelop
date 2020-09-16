@@ -18,7 +18,10 @@
     "type": "git",
     "url": "https://github.com/icedjuro/IcicleDevelop.git"
   },
-  "author": "Milan Djurovic",
+  "author": {
+    "name": "Milan Djurovic",
+    "email": "milandjurovic625@gmail.com"
+  },
   "license": "MIT",
   "dependencies": {
     "codemirror": "^5.57.0",
