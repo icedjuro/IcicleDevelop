@@ -6,6 +6,7 @@
   "scripts": {
     "start": "electron .",
     "start-dev": "electron . --dev",
+    "test": "jest",
     "dist:win": "electron-builder --win -p never",
     "dist:linux": "electron-builder --linux -p never",
     "dist:mac": "electron-builder --mac -p never",
@@ -27,7 +28,8 @@
   },
   "devDependencies": {
     "electron": "^10.1.2",
-    "electron-builder": "^22.8.0"
+    "electron-builder": "^22.8.0",
+    "jest": "^26.4.2"
   },
   "build": {
     "appId": "me.milandjurovic.icicledevelop",
@@ -51,7 +53,7 @@
       "allowToChangeInstallationDirectory": "true"
     },
     "linux": {
-      "icon": "assets/logo128.png",
+      "icon": "assets/logo256.png",
       "target": [
         "AppImage",
         "zip",
