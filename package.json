@@ -7,6 +7,7 @@
     "start": "electron .",
     "start-dev": "electron . --dev",
     "test": "jest",
+    "format": "standard --fix",
     "dist:win": "electron-builder --win -p never",
     "dist:linux": "electron-builder --linux -p never",
     "dist:mac": "electron-builder --mac -p never",
@@ -26,13 +27,13 @@
   "dependencies": {
     "codemirror": "^5.57.0",
     "electron-updater": "^4.3.4",
-    "feather-icons": "^4.28.0",
-    "requirejs": "^2.3.6"
+    "feather-icons": "^4.28.0"
   },
   "devDependencies": {
     "electron": "^10.1.2",
     "electron-builder": "^22.8.0",
-    "jest": "^26.4.2"
+    "jest": "^26.4.2",
+    "standard": "^14.3.4"
   },
   "build": {
     "appId": "me.milandjurovic.icicledevelop",
