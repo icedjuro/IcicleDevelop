@@ -6,7 +6,7 @@ I'm accepting both feature requests and bug reports on issues. If you are making
 If you are reporting a bug, be as specific as possible: operating system, steps to reproduce, etc. Steps to reproduce should be as few steps as possible that can still reproduce the bug consistently. If you have any idea what may be causing the bug, include it.
 
 ## Developing
-Make a fork of this repository and clone your fork. Make a new branch to implement your changes. Instructions on setting up and running IcicleDevelop from the source code can be found in the [README](README).
+Make a fork of this repository and clone your fork. Make a new branch to implement your changes. Instructions on setting up and running IcicleDevelop from the source code can be found in the [README](README.md).
 
 When you're done implementing your changes, run:
 ```
