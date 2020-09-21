@@ -69,10 +69,34 @@
       </div>
     </div>
     <div class="settingsbar">
-      <!-- <i id="settings-button" data-feather="settings"></i> -->
+      <i id="settings-button" data-feather="settings"></i>
       <i id="info-button" data-feather="info"></i>
     </div>
   </main>
+  <div id="settingsModal">
+    <div id="settingsModalContent">
+      <div id="settingsCloseButton">
+        <img src="../assets/close_button.png" draggable="false" width="35" />
+      </div>
+      <h2>Settings</h2>
+      <form id="settingsForm" novalidate>
+        <div>
+          <label for="keyMap">Key Bindings</label>
+          <select name="keyMap">
+            <option value="default">Default</option>
+            <option value="vim">Vim</option>
+            <option value="emacs">Emacs</option>
+            <option value="sublime">Sublime</option>
+          </select>
+        </div>
+        <div>
+          <label for="fontSize">Font Size</label>
+          <input type="number" name="fontSize" min="6" max="50">
+          <div id="fontWarning">Font Size must be between 6 and 50</div>
+        </div>
+      </form>
+    </div>
+  </div>
   <script src="script.js"></script>
 </body>
 

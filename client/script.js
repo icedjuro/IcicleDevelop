@@ -1,11 +1,21 @@
 require('./ui')
 
 const { remote } = require('electron')
-const fs = require('fs')
 const win = remote.getCurrentWindow()
 const feather = require('feather-icons')
 feather.replace()
 let currentFileOpened
+
+const fs = require('fs')
+const path = require('path')
+const settingsPath = path.join(remote.app.getPath('userData'), 'settings.json')
+let settingsData
+if (!fs.existsSync(settingsPath)) {
+  fs.readFile(path.join(__dirname, 'defaultSettings.json'), (err, data) => {
+    if (err) throw err
+    fs.writeFile(settingsPath, data, defaultErrorCallback)
+  })
+}
 
 const closeButtons = document.getElementsByClassName('close-button')
 const maximizeButton = document.getElementById('maximize-button')
@@ -19,54 +29,48 @@ const codeArea = document.getElementById('codearea')
 const welcomePage = document.getElementById('welcome-page')
 const welcomeClose = document.getElementById('welcome-close-button')
 const infoButton = document.getElementById('info-button')
+const settingsModal = document.getElementById('settingsModal')
+const settingsButton = document.getElementById('settings-button')
+const settingsClose = document.getElementById('settingsCloseButton')
+const settingsForm = document.getElementById('settingsForm')
+
+window.addEventListener('click', e => {
+  if (e.target === settingsModal) {
+    settingsModal.style.display = 'none'
+    main.style.filter = 'blur(0)'
+  }
+})
 
 for (const e of closeButtons) {
-  e.addEventListener('click', close)
+  e.addEventListener('click', () => win.close())
 };
 
-maximizeButton.addEventListener('click', maximize)
-win.on('maximize', onMaximized)
-win.on('unmaximize', onUnmaximized)
-win.maximize()
-minimizeButton.addEventListener('click', minimize)
-welcomeClose.addEventListener('click', hideWelcome)
-infoButton.addEventListener('click', showWelcome)
+maximizeButton.addEventListener('click', () => win.isMaximized() ? win.unmaximize() : win.maximize())
+win.on('maximize', () => {
+  maximizeButton.children[0].src = `file://${__dirname}/../assets/restore_button.png`
+})
 
-titleBarMenu.querySelector('#titlebar-button').addEventListener('click', showMenu)
-main.addEventListener('click', hideMenu)
+win.on('unmaximize', () => {
+  maximizeButton.children[0].src = `file://${__dirname}/../assets/maximize_button.png`
+})
+
+win.maximize()
+minimizeButton.addEventListener('click', () => win.minimize())
+welcomeClose.addEventListener('click', () => {
+  titleBarMenu.querySelector('ul').style.display = 'block'
+})
+
+infoButton.addEventListener('click', showWelcome)
+titleBarMenu.querySelector('#titlebar-button').addEventListener('click', () => {
+  titleBarMenu.querySelector('ul').style.display = 'block'
+})
+
+main.addEventListener('click', () => {
+  titleBarMenu.querySelector('ul').style.display = 'none'
+})
 
 openFile.addEventListener('change', onFileOpened)
 saveFile.addEventListener('click', onFileSaved)
-
-// Window Functions
-
-function close () {
-  win.close()
-}
-
-function minimize () {
-  win.minimize()
-}
-
-function maximize () {
-  win.isMaximized() ? win.unmaximize() : win.maximize()
-}
-
-function onUnmaximized () {
-  maximizeButton.children[0].src = `file://${__dirname}/../assets/maximize_button.png`
-}
-
-function onMaximized () {
-  maximizeButton.children[0].src = `file://${__dirname}/../assets/restore_button.png`
-}
-
-function showMenu () {
-  titleBarMenu.querySelector('ul').style.display = 'block'
-}
-
-function hideMenu () {
-  titleBarMenu.querySelector('ul').style.display = 'none'
-}
 
 function hideWelcome () {
   codeArea.style.display = 'block'
@@ -79,7 +83,66 @@ function showWelcome () {
   welcomePage.style.display = 'block'
 }
 
+function onSettingsButtonClick () {
+  settingsModal.style.display = 'block'
+  main.style.filter = 'blur(10px)'
+}
+
+// Settings Functions
+settingsButton.addEventListener('click', onSettingsButtonClick)
+settingsClose.addEventListener('click', () => {
+  settingsModal.style.display = 'none'
+  main.style.filter = 'blur(0)'
+})
+
+settingsForm.addEventListener('focusout', updateSettingsMenu)
+settingsForm.addEventListener('change', () => {
+  if (settingsForm.checkValidity()) {
+    settingsData.keyMap = settingsForm.querySelector('[name="keyMap"]').value
+    settingsData.fontSize = settingsForm.querySelector('[name="fontSize"]').value
+    loadSettingsData()
+    updateSettingsFile()
+  }
+})
+
+settingsForm.addEventListener('submit', e => {
+  e.preventDefault()
+})
+
+fs.watchFile(settingsPath, () => readTextFile(settingsPath))
+function readTextFile (filePath) {
+  var rawFile = new window.XMLHttpRequest()
+  rawFile.open('GET', filePath, false)
+  rawFile.onreadystatechange = function () {
+    if (rawFile.readyState === 4) {
+      if (rawFile.status === 200 || rawFile.status === 0) {
+        settingsData = JSON.parse(rawFile.responseText)
+        loadSettingsData()
+        updateSettingsMenu()
+      }
+    }
+  }
+  rawFile.send()
+}
+
+function loadSettingsData () {
+  codeMirror.setOption('keyMap', settingsData.keyMap)
+  document.querySelector('.CodeMirror').style.fontSize = `${settingsData.fontSize}px`
+}
+
+function updateSettingsMenu () {
+  settingsForm.querySelector('[name="keyMap"]').value = settingsData.keyMap
+  settingsForm.querySelector('[name="fontSize"]').value = settingsData.fontSize || 16
+}
+
+function updateSettingsFile () {
+  fs.writeFile(settingsPath, JSON.stringify(settingsData), defaultErrorCallback)
+}
+
 // File Functions
+function defaultErrorCallback (err) {
+  if (err) throw (err)
+}
 
 function onFileOpened () {
   hideWelcome()
@@ -99,13 +162,13 @@ function onFileOpened () {
     changeMode(currentFile.name)
   }
   reader.readAsText(currentFile)
-  hideMenu()
+  titleBarMenu.querySelector('ul').style.display = 'none'
   openFile.value = ''
 };
 
 function onFileSaved () {
-  hideMenu()
-  fs.writeFile(currentFileOpened.path, codeMirror.getValue(), err => { if (err) throw (err) })
+  titleBarMenu.querySelector('ul').style.display = 'none'
+  fs.writeFile(currentFileOpened.path, codeMirror.getValue(), defaultErrorCallback)
   fileExplorer.querySelector('ul li p ').textContent = currentFileOpened.name // Removes unsaved marker
 }
 
@@ -113,6 +176,7 @@ function fileUnsaved () {
   document.querySelector('#fileexplorer ul li p ').textContent = currentFileOpened.name + '(*)'
 }
 
+// Shortcut Keys
 window.addEventListener('keydown', function (e) {
   if (e.ctrlKey && e.key === 's') { onFileSaved() }
 })
@@ -121,6 +185,11 @@ window.addEventListener('keydown', function (e) {
   if (e.ctrlKey && e.key === 'o') { openFile.click() }
 })
 
+window.addEventListener('keydown', function (e) {
+  if (e.ctrlKey && e.key === ',') { onSettingsButtonClick() }
+})
+
+// CodeMirror Configuration
 const CodeMirror = require('../node_modules/codemirror/lib/codemirror')
 require('../node_modules/codemirror/mode/javascript/javascript')
 require('../node_modules/codemirror/mode/clike/clike')
@@ -145,6 +214,9 @@ require('../node_modules/codemirror/addon/fold/markdown-fold')
 require('../node_modules/codemirror/addon/fold/comment-fold')
 require('../node_modules/codemirror/addon/mode/loadmode')
 require('../node_modules/codemirror/mode/meta')
+require('../node_modules/codemirror/keymap/vim')
+require('../node_modules/codemirror/keymap/emacs')
+require('../node_modules/codemirror/keymap/sublime')
 
 const codeMirror = CodeMirror(document.getElementById('codearea'), {
   lineNumbers: true,
@@ -159,3 +231,4 @@ codeMirror.on('change', fileUnsaved)
 
 codeMirror.setSize('100%', '100%')
 const changeMode = val => codeMirror.setOption('mode', CodeMirror.findModeByFileName(val).mime)
+readTextFile(settingsPath)
