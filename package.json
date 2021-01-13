@@ -57,7 +57,7 @@
       "allowToChangeInstallationDirectory": "true"
     },
     "linux": {
-      "icon": "assets/logo256.png",
+      "icon": "assets/256x256.png",
       "target": [
         "AppImage",
         "zip",

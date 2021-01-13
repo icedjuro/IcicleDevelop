@@ -21,7 +21,7 @@ function boot () {
   let window = new BrowserWindow({
     frame: false,
     resizable: true,
-    icon: 'assets/logo256.png',
+    icon: 'assets/256x256.png',
     minHeight: 400,
     minWidth: 500,
     webPreferences: {
