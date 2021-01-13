@@ -56,9 +56,7 @@ win.on('unmaximize', () => {
 
 win.maximize()
 minimizeButton.addEventListener('click', () => win.minimize())
-welcomeClose.addEventListener('click', () => {
-  titleBarMenu.querySelector('ul').style.display = 'block'
-})
+welcomeClose.addEventListener('click', hideWelcome)
 
 infoButton.addEventListener('click', showWelcome)
 titleBarMenu.querySelector('#titlebar-button').addEventListener('click', () => {
