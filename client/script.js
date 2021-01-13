@@ -2,8 +2,16 @@ require('./ui')
 
 const { remote } = require('electron')
 const win = remote.getCurrentWindow()
+const dialog = remote.dialog
 const feather = require('feather-icons')
 feather.replace()
+
+// Must use custom file object
+// Built-in File object doesn't work well for this use case
+function _File (filePath) {
+  this.path = filePath
+  this.name = path.basename(filePath)
+}
 let currentFileOpened
 
 const fs = require('fs')
@@ -23,6 +31,7 @@ const minimizeButton = document.getElementById('minimize-button')
 const titleBarMenu = document.getElementById('titlebar-menu')
 const fileExplorer = document.getElementById('fileexplorer')
 const main = document.querySelector('main')
+const newFile = document.getElementById('newFile')
 const openFile = document.getElementById('openFile')
 const saveFile = document.getElementById('saveFile')
 const codeArea = document.getElementById('codearea')
@@ -67,6 +76,7 @@ main.addEventListener('click', () => {
   titleBarMenu.querySelector('ul').style.display = 'none'
 })
 
+newFile.addEventListener('click', onNewFile)
 openFile.addEventListener('change', onFileOpened)
 saveFile.addEventListener('click', onFileSaved)
 
@@ -109,18 +119,10 @@ settingsForm.addEventListener('submit', e => {
 
 fs.watchFile(settingsPath, () => readTextFile(settingsPath))
 function readTextFile (filePath) {
-  var rawFile = new window.XMLHttpRequest()
-  rawFile.open('GET', filePath, false)
-  rawFile.onreadystatechange = function () {
-    if (rawFile.readyState === 4) {
-      if (rawFile.status === 200 || rawFile.status === 0) {
-        settingsData = JSON.parse(rawFile.responseText)
-        loadSettingsData()
-        updateSettingsMenu()
-      }
-    }
-  }
-  rawFile.send()
+  const data = fs.readFileSync(filePath)
+  settingsData = JSON.parse(data.toString())
+  loadSettingsData()
+  updateSettingsMenu()
 }
 
 function loadSettingsData () {
@@ -142,36 +144,54 @@ function defaultErrorCallback (err) {
   if (err) throw (err)
 }
 
+function onNewFile () {
+  currentFileOpened = undefined
+  setupFile('', 'Untitled')
+  titleBarMenu.querySelector('ul').style.display = 'none'
+}
+
 function onFileOpened () {
-  hideWelcome()
-  const currentFile = openFile.files[0]
-  currentFileOpened = currentFile
-  const reader = new window.FileReader()
-  reader.onload = () => {
-    codeMirror.setValue(reader.result)
-    const fileSVG = document.createElement('i')
-    const fileName = document.querySelector('#fileexplorer ul li p')
-    fileName.textContent = currentFile.name
-    fileSVG.dataset.feather = 'file'
-    fileExplorer.querySelector('ul li').textContent = ''
-    fileExplorer.querySelector('ul li').appendChild(fileSVG)
-    fileExplorer.querySelector('ul li').appendChild(fileName)
-    feather.replace()
-    changeMode(currentFile.name)
-  }
-  reader.readAsText(currentFile)
+  currentFileOpened = new _File(openFile.files[0].path)
+  const data = fs.readFileSync(currentFileOpened.path)
+  setupFile(data.toString(), currentFileOpened.name)
   titleBarMenu.querySelector('ul').style.display = 'none'
   openFile.value = ''
 };
 
+function setupFile (data, name) {
+  codeMirror.getWrapperElement().style.display = 'block'
+  codeMirror.setValue(data)
+  codeMirror.clearHistory()
+
+  const fileSVG = document.createElement('i')
+  const fileName = document.querySelector('#fileexplorer ul li p')
+  fileName.textContent = name
+  fileSVG.dataset.feather = 'file'
+  fileExplorer.querySelector('ul li').textContent = ''
+  fileExplorer.querySelector('ul li').appendChild(fileSVG)
+  fileExplorer.querySelector('ul li').appendChild(fileName)
+  feather.replace()
+  changeMode(name)
+  hideWelcome()
+}
+
 function onFileSaved () {
   titleBarMenu.querySelector('ul').style.display = 'none'
+  if (!currentFileOpened) {
+    const filePath = dialog.showSaveDialogSync()
+    currentFileOpened = new _File(filePath)
+  }
+
   fs.writeFile(currentFileOpened.path, codeMirror.getValue(), defaultErrorCallback)
   fileExplorer.querySelector('ul li p ').textContent = currentFileOpened.name // Removes unsaved marker
 }
 
 function fileUnsaved () {
-  document.querySelector('#fileexplorer ul li p ').textContent = currentFileOpened.name + '(*)'
+  if (currentFileOpened) {
+    document.querySelector('#fileexplorer ul li p ').textContent = currentFileOpened.name + '(*)'
+  } else {
+    document.querySelector('#fileexplorer ul li p ').textContent = 'Untitled' + '(*)'
+  }
 }
 
 // Shortcut Keys
@@ -181,6 +201,10 @@ window.addEventListener('keydown', function (e) {
 
 window.addEventListener('keydown', function (e) {
   if (e.ctrlKey && e.key === 'o') { openFile.click() }
+})
+
+window.addEventListener('keydown', function (e) {
+  if (e.ctrlKey && e.key === 'n') { newFile.click() }
 })
 
 window.addEventListener('keydown', function (e) {
@@ -228,5 +252,9 @@ const codeMirror = CodeMirror(document.getElementById('codearea'), {
 codeMirror.on('change', fileUnsaved)
 
 codeMirror.setSize('100%', '100%')
-const changeMode = val => codeMirror.setOption('mode', CodeMirror.findModeByFileName(val).mime)
+const changeMode = val => {
+  if (CodeMirror.findModeByFileName(val)) { codeMirror.setOption('mode', CodeMirror.findModeByFileName(val).mime) }
+}
+
+codeMirror.getWrapperElement().style.display = 'none'
 readTextFile(settingsPath)
