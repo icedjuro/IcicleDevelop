@@ -49,7 +49,7 @@ const titleBarMenu = document.getElementById('titlebar-menu')!
 const fileExplorer = document.getElementById('fileexplorer')!
 const main = document.querySelector('main')!
 const newFile = document.getElementById('newFile')!
-const openFile = <HTMLInputElement>document.getElementById('openFile')!
+const openFile = document.getElementById('openFile')!
 const saveFile = document.getElementById('saveFile')!
 const codeArea = document.getElementById('codearea')!
 const welcomePage = document.getElementById('welcome-page')!
@@ -69,7 +69,7 @@ window.addEventListener('click', e => {
 
 for (const e of closeButtons) {
   e.addEventListener('click', () => win.close())
-};
+}
 
 maximizeButton.addEventListener('click', () => win.isMaximized() ? win.unmaximize() : win.maximize())
 win.on('maximize', () => {
@@ -94,7 +94,7 @@ main.addEventListener('click', () => {
 })
 
 newFile.addEventListener('click', onNewFile)
-openFile.addEventListener('change', onFileOpened)
+openFile.addEventListener('click', onFileOpened)
 saveFile.addEventListener('click', onFileSaved)
 
 function hideWelcome () {
@@ -164,15 +164,14 @@ function onNewFile () {
 }
 
 function onFileOpened () {
-  // File object doesn't have property "path" but can still be used from file input elements
-  // Therefore, it must be asserted to type any
-  currentFileOpened = new _File((<any>openFile.files![0]).path)
-
-  const data = fs.readFileSync(currentFileOpened.path)
-  setupFile(data.toString(), currentFileOpened.name)
-  titleBarMenu.querySelector('ul')!.style.display = 'none'
-  openFile.value = ''
-};
+  dialog.showOpenDialog(win, {properties: ['openFile']}).then((result: Electron.OpenDialogReturnValue) => {
+    if (!result.canceled)
+      currentFileOpened = new _File(result.filePaths[0])
+      const data = fs.readFileSync(currentFileOpened!.path)
+      setupFile(data.toString(), currentFileOpened!.name)
+      titleBarMenu.querySelector('ul')!.style.display = 'none'
+  })
+}
 
 function setupFile (data: string, name: string) {
   codeMirror.getWrapperElement().style.display = 'block'
