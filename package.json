@@ -4,10 +4,10 @@
   "description": "A freezing cold development environment",
   "main": "index.js",
   "scripts": {
-    "start": "electron .",
-    "start-dev": "electron . --dev",
+    "start": "tsc && electron .",
+    "start-dev": "tsc && electron . --dev",
+    "build": "tsc",
     "test": "jest",
-    "format": "standard --fix",
     "dist:win": "electron-builder --win -p never",
     "dist:linux": "electron-builder --linux -p never",
     "dist:mac": "electron-builder --mac -p never",
@@ -30,10 +30,13 @@
     "feather-icons": "^4.28.0"
   },
   "devDependencies": {
+    "@types/codemirror": "0.0.106",
+    "@types/feather-icons": "^4.7.0",
+    "@types/node": "^14.14.20",
     "electron": "^10.1.2",
     "electron-builder": "^22.8.0",
     "jest": "^26.4.2",
-    "standard": "^14.3.4"
+    "typescript": "^4.1.3"
   },
   "build": {
     "appId": "me.milandjurovic.icicledevelop",

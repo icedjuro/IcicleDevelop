@@ -10,19 +10,9 @@ Make a fork of this repository and clone your fork. Make a new branch to impleme
 
 When you're done implementing your changes, run:
 ```
-npm run format
-```
-This will automatically format your code to the Javascript Standard Style and show any errors that need to be fixed. 
-
-Next, run:
-```
 npm run test
 ```
 This will run all the tests, which Jest will check and tell you if your tests passed. **If applicable: write new tests for the changes you made.**
 
 ### Opening a Pull Request
 Make sure you describe what your pull request does with enough information that is needed. Also, make sure your branch is updated.
-
-### Code Styling
-* 2 spaces per indent
-* Follow Javascript Standard Style
