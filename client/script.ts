@@ -226,8 +226,10 @@ function setupFile (data: string, name: string) {
 
 function renderFileTree(fileTree: FileTree, uList: HTMLUListElement, isRoot = false) {
   const itemSVG = document.createElement('i')
-  if (fileTree.isDir)
-    itemSVG.dataset.feather = 'folder'
+  if (fileTree.isDir && fileTree.isDirOpened)
+    itemSVG.dataset.feather = 'folder-minus'
+  else if (fileTree.isDir)
+    itemSVG.dataset.feather = 'folder-plus'
   else
     itemSVG.dataset.feather = 'file'
 
@@ -246,17 +248,40 @@ function renderFileTree(fileTree: FileTree, uList: HTMLUListElement, isRoot = fa
   li.appendChild(itemName)
 
   li.addEventListener('click', () => {
-    if (!fileTree.isDir) openFile(fileTree.itemPath)
     if (selectedFileInFolder)
       selectedFileInFolder.classList.remove('selectedFile')
     selectedFileInFolder = li
     li.classList.add('selectedFile')
+    if (!fileTree.isDir) {
+      openFile(fileTree.itemPath)
+      selectedFileInFolder.querySelector('p')!.textContent = currentFileOpened!.name // Removes unsaved marker
+    }
+    if (fileTree.isDirOpened) {
+      fileTree.isDirOpened = false
+      li.removeChild(li.childNodes[0])
+      const newSVG = document.createElement('i')
+      newSVG.dataset.feather = 'folder-plus'
+      li.prepend(newSVG)
+      const indexAhead = [...li.parentNode!.children].indexOf(li) + 1;
+      (uList.children[indexAhead] as HTMLUListElement)!.style.display = 'none'
+      feather.replace()
+    } else if (fileTree.isDir) {
+      fileTree.isDirOpened = true
+      li.removeChild(li.childNodes[0])
+      const newSVG = document.createElement('i')
+      newSVG.dataset.feather = 'folder-minus'
+      li.prepend(newSVG)
+      const indexAhead = [...li.parentNode!.children].indexOf(li) + 1;
+      (uList.children[indexAhead] as HTMLUListElement)!.style.display = 'block'
+      feather.replace()
+    }
   })
 
   if (fileTree.isDir)
   {
     const ul = document.createElement('ul')
     ul.classList.add('treeBorder')
+    if (!fileTree.isDirOpened) ul.style.display = 'none'
 
     fileTree.children.forEach(child => {
       renderFileTree(child, ul)
