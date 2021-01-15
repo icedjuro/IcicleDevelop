@@ -142,6 +142,15 @@ main {
     height: 100%;
     width: 300px;
     border-left: var(--dark-blue) 2px solid;
+    overflow: auto;
+}
+
+#fileexplorer ul {
+    background-color: #20295a;
+}
+
+#fileexplorer li:hover, .selectedFile {
+    background-color: #343c6d;
 }
 
 #fileexplorer ul li {
@@ -150,7 +159,6 @@ main {
     width: 100%;
     text-align: center;
     color: var(--white);
-    background-color: #20295a;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -158,6 +166,12 @@ main {
 
 #fileexplorer ul li * {
     margin-left: 5px;
+}
+
+.treeBorder {
+    padding-left: 5px;
+    margin-left: 5px;
+    border-left: 2px solid var(--white);
 }
 
 #codearea {

@@ -1,11 +1,12 @@
 import { remote } from 'electron'
 import feather from 'feather-icons'
+import FileTree from './fileTree'
 
 import fs from 'fs'
 import path from 'path'
 
-// CodeMirror Configuration
 import CodeMirror from 'codemirror'
+import { listenerCount } from 'cluster'
 
 require('./ui')
 const win = remote.getCurrentWindow()
@@ -26,7 +27,8 @@ class _File {
   }
 }
 
-let currentFileOpened: _File | undefined
+// Undefined means a new file is open, null means no file is open
+let currentFileOpened: _File | undefined | null = null
 const settingsPath = path.join(remote.app.getPath('userData'), 'settings.json')
 
 interface SettingsData {
@@ -42,14 +44,18 @@ if (!fs.existsSync(settingsPath)) {
   })
 }
 
+let selectedFileInFolder: HTMLLIElement
+let isFolderOpen: boolean
+
 const closeButtons = document.getElementsByClassName('close-button')!
 const maximizeButton = document.getElementById('maximize-button')!
 const minimizeButton = document.getElementById('minimize-button')!
 const titleBarMenu = document.getElementById('titlebar-menu')!
 const fileExplorer = document.getElementById('fileexplorer')!
 const main = document.querySelector('main')!
-const newFile = document.getElementById('newFile')!
-const openFile = document.getElementById('openFile')!
+const newFileButton = document.getElementById('newFile')!
+const openFileButton = document.getElementById('openFile')!
+const openFolderButton = document.getElementById('openFolder')!
 const saveFile = document.getElementById('saveFile')!
 const codeArea = document.getElementById('codearea')!
 const welcomePage = document.getElementById('welcome-page')!
@@ -93,8 +99,9 @@ main.addEventListener('click', () => {
   titleBarMenu.querySelector('ul')!.style.display = 'none'
 })
 
-newFile.addEventListener('click', onNewFile)
-openFile.addEventListener('click', onFileOpened)
+newFileButton.addEventListener('click', onNewFile)
+openFileButton.addEventListener('click', onFileOpened)
+openFolderButton.addEventListener('click', onFolderOpened)
 saveFile.addEventListener('click', onFileSaved)
 
 function hideWelcome () {
@@ -159,6 +166,7 @@ function updateSettingsFile () {
 // File Functions
 function onNewFile () {
   currentFileOpened = undefined
+  isFolderOpen = false
   setupFile('', 'Untitled')
   titleBarMenu.querySelector('ul')!.style.display = 'none'
 }
@@ -166,10 +174,31 @@ function onNewFile () {
 function onFileOpened () {
   dialog.showOpenDialog(win, {properties: ['openFile']}).then((result: Electron.OpenDialogReturnValue) => {
     if (!result.canceled)
-      currentFileOpened = new _File(result.filePaths[0])
-      const data = fs.readFileSync(currentFileOpened!.path)
-      setupFile(data.toString(), currentFileOpened!.name)
-      titleBarMenu.querySelector('ul')!.style.display = 'none'
+    {
+      isFolderOpen = false
+      openFile(result.filePaths[0])
+    }
+  })
+}
+
+function openFile(fPath: string) {
+  currentFileOpened = new _File(fPath)
+  const data = fs.readFileSync(currentFileOpened!.path)
+  setupFile(data.toString(), currentFileOpened!.name)
+  titleBarMenu.querySelector('ul')!.style.display = 'none'
+}
+
+function onFolderOpened () {
+  titleBarMenu.querySelector('ul')!.style.display = 'none'
+  dialog.showOpenDialog(win, {properties: ['openDirectory']}).then((result: Electron.OpenDialogReturnValue) => {
+      if (!result.canceled && result.filePaths && result.filePaths[0]) {
+        isFolderOpen = true
+        codeMirror.getWrapperElement().style.display = 'none'
+        currentFileOpened = null
+        let fileTree = new FileTree(result.filePaths[0], path.basename(result.filePaths[0]), true)
+        fileTree.generate()
+        renderFileTree(fileTree, fileExplorer.querySelector('ul')!, true)
+      }
   })
 }
 
@@ -178,34 +207,91 @@ function setupFile (data: string, name: string) {
   codeMirror.setValue(data)
   codeMirror.clearHistory()
 
-  const fileSVG = document.createElement('i')
-  const fileName = document.querySelector('#fileexplorer ul li p')!
-  fileName.textContent = name
-  fileSVG.dataset.feather = 'file'
-  fileExplorer.querySelector('ul li')!.textContent = ''
-  fileExplorer.querySelector('ul li')!.appendChild(fileSVG)
-  fileExplorer.querySelector('ul li')!.appendChild(fileName)
-  feather.replace()
+  if (!isFolderOpen) {
+    fileExplorer.querySelector('ul')!.textContent = ''
+    const li = document.createElement('li')
+    const fileSVG = document.createElement('i')
+    const fileName = document.createElement('p')
+    fileName.textContent = name
+    fileSVG.dataset.feather = 'file'
+    li.appendChild(fileSVG)
+    li.appendChild(fileName)
+    fileExplorer.querySelector('ul')!.appendChild(li)
+    feather.replace()
+  }
+
   changeMode(name)
   hideWelcome()
 }
 
+function renderFileTree(fileTree: FileTree, uList: HTMLUListElement, isRoot = false) {
+  const itemSVG = document.createElement('i')
+  if (fileTree.isDir)
+    itemSVG.dataset.feather = 'folder'
+  else
+    itemSVG.dataset.feather = 'file'
+
+  if (isRoot)
+    uList.textContent = '' // Clear file explorer
+
+  const li = document.createElement('li')
+  li.style.justifyContent = 'flex-start'
+  const itemName = document.createElement('p')
+  itemName.textContent = fileTree.name
+  li.appendChild(itemName)
+  uList.appendChild(li)
+
+
+  li.appendChild(itemSVG)
+  li.appendChild(itemName)
+
+  li.addEventListener('click', () => {
+    if (!fileTree.isDir) openFile(fileTree.itemPath)
+    if (selectedFileInFolder)
+      selectedFileInFolder.classList.remove('selectedFile')
+    selectedFileInFolder = li
+    li.classList.add('selectedFile')
+  })
+
+  if (fileTree.isDir)
+  {
+    const ul = document.createElement('ul')
+    ul.classList.add('treeBorder')
+
+    fileTree.children.forEach(child => {
+      renderFileTree(child, ul)
+    })
+    uList.appendChild(ul)
+  }
+
+  if (isRoot) {
+    feather.replace()
+  }
+}
+
 function onFileSaved () {
   titleBarMenu.querySelector('ul')!.style.display = 'none'
-  if (!currentFileOpened) {
+  if (currentFileOpened===undefined) {
     const filePath = dialog.showSaveDialogSync({})
     currentFileOpened = new _File(filePath!)
   }
-
+  if (currentFileOpened === null) return
   fs.writeFile(currentFileOpened.path, codeMirror.getValue(), err => { if (err) throw (err) })
-  fileExplorer.querySelector('ul li p ')!.textContent = currentFileOpened.name // Removes unsaved marker
+  if (selectedFileInFolder)
+    selectedFileInFolder.querySelector('p')!.textContent = currentFileOpened.name // Removes unsaved marker
+  else
+  fileExplorer.querySelector('ul li p')!.textContent = currentFileOpened.name // Removes unsaved marker
 }
 
 function fileUnsaved () {
-  if (currentFileOpened) {
-    document.querySelector('#fileexplorer ul li p ')!.textContent = currentFileOpened.name + '(*)'
-  } else {
-    document.querySelector('#fileexplorer ul li p ')!.textContent = 'Untitled' + '(*)'
+  if (!isFolderOpen) {
+    if (currentFileOpened) {
+      document.querySelector('#fileexplorer ul li p')!.textContent = currentFileOpened.name + '(*)'
+    } else {
+      document.querySelector('#fileexplorer ul li p')!.textContent = 'Untitled' + '(*)'
+    }
+  } else if (currentFileOpened && selectedFileInFolder) {
+      selectedFileInFolder.querySelector('p')!.textContent = currentFileOpened.name + '(*)'
   }
 }
 
@@ -215,16 +301,21 @@ window.addEventListener('keydown', function (e) {
 })
 
 window.addEventListener('keydown', function (e) {
-  if (e.ctrlKey && e.key === 'o') { openFile.click() }
+  if (e.ctrlKey && e.key === 'o') { openFileButton.click() }
 })
 
 window.addEventListener('keydown', function (e) {
-  if (e.ctrlKey && e.key === 'n') { newFile.click() }
+  if (e.ctrlKey && e.shiftKey && e.key === 'a') { openFolderButton.click() }
+})
+
+window.addEventListener('keydown', function (e) {
+  if (e.ctrlKey && e.key === 'n') { newFileButton.click() }
 })
 
 window.addEventListener('keydown', function (e) {
   if (e.ctrlKey && e.key === ',') { onSettingsButtonClick() }
 })
+
 require('../node_modules/codemirror/mode/javascript/javascript')
 require('../node_modules/codemirror/mode/clike/clike')
 require('../node_modules/codemirror/mode/htmlmixed/htmlmixed')
